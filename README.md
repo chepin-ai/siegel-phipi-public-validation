@@ -9,7 +9,7 @@
 ## 公共 CI 闸口
 
 1. 固定 Lean `v4.36.0-rc2` 与 mathlib 提交 `4ecbbfd4570fa1dde086dffd72bc5dec5a728042`。
-2. 真实 `lake build` 与 `lean4checker --fresh Proofs`。
+2. 真实 `lake build`；若工具链携带 `lean4checker` 则执行 `--fresh Proofs`，若未携带必须明确记录 `NOT_BUNDLED`，不得冒充通过。
 3. 14/14 theorem 的 `#print axioms` 审计，拒绝任何 `sorryAx`、未知公理和覆盖缺失。
 4. `lean4export` 导出后由独立 Rust `nanoda` 检查全部传递依赖。
 5. 已知坏答案 `False := by sorry` 必须被 nanoda 拒绝，否则整个工作流失败。
