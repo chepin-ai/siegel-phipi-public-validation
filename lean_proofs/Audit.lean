@@ -15,6 +15,7 @@ import Proofs
 #print axioms SiegelPhiPi.QuantumInformation.Tsirelson_Ordered_Star_Algebra_Bound
 #print axioms SiegelPhiPi.QuantumInformation.Tsirelson_Norm_Bound_CStar
 #print axioms SiegelPhiPi.QuantumInformation.Tsirelson_Matrix_L2_Norm_Bound
+#print axioms SiegelPhiPi.QuantumInformation.Tsirelson_Tensor_Product_L2_Norm_Bound
 #print axioms SiegelPhiPi.QuantumInformation.Rational_Between_Classical_And_Tsirelson
 #print axioms SiegelPhiPi.LeanFormalization.φ_core_gt_one
 #print axioms SiegelPhiPi.LeanFormalization.φ_core_irrational

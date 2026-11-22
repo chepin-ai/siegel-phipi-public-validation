@@ -4,11 +4,11 @@ Siegel-φπ 万定理体系 — Attestation Requests 形式化证明
 日期: 2026-11-22
 
 本文件为真实Lean 4编译轨，不以请求数或历史α/β/γ标签冒充证明状态。
-- 14个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
+- 15个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
 - example的历史注释仅记录请求来源，不获得定理地位；全部声明不依赖sorryAx
 - π超越性：固定Lindemann-Weierstrass PR完整证明，不再保留开放sorry
-- Kleene第二递归定理、KL零散度判据、矩阵L2 Tsirelson界已纳入
-- 当前版本以14/14公理审计为准；历史run#6仅对应语义收割前版本
+- Kleene第二递归定理、KL零散度判据、矩阵L2及具体张量积Tsirelson界已纳入
+- 当前版本以15/15公理审计为准；历史run#6仅对应语义收割前版本
 - α/β/γ仅为项目内部分级，不是外部数学认证
 
 "The system is the proof."
@@ -29,6 +29,7 @@ import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.GroupTheory.Perm.Basic
 import Mathlib.Algebra.Star.CHSH
+import Mathlib.LinearAlgebra.Matrix.Kronecker
 import Mathlib.Analysis.CStarAlgebra.Matrix
 import Mathlib.Analysis.Matrix.Order
 import Mathlib.Analysis.CStarAlgebra.ContinuousFunctionalCalculus.Order
@@ -43,7 +44,7 @@ import Mathlib.NumberTheory.Transcendental.Lindemann.Basic
 import Mathlib.RingTheory.Localization.Integral
 
 open scoped BigOperators
-open scoped Matrix.Norms.L2Operator MatrixOrder
+open scoped Matrix.Norms.L2Operator MatrixOrder Kronecker
 
 -- ============================================
 -- 第一部分: 核心结构恒等式 (4个请求)
@@ -545,7 +546,8 @@ theorem Tsirelson_Norm_Bound_CStar
 
 /-- 有限维复矩阵的 L2 算子范数 Tsirelson 界，右端写成通常的 `2√2`。 -/
 theorem Tsirelson_Matrix_L2_Norm_Bound
-    (A A' B B' : Matrix (Fin 4) (Fin 4) ℂ)
+    {n : Type*} [Fintype n] [DecidableEq n] [Nonempty n]
+    (A A' B B' : Matrix n n ℂ)
     (T : IsCHSHTuple A A' B B') :
     ‖A * B + A * B' + A' * B - A' * B'‖ ≤ 2 * Real.sqrt 2 := by
   have h := Tsirelson_Norm_Bound_CStar A A' B B' T
@@ -554,6 +556,92 @@ theorem Tsirelson_Matrix_L2_Norm_Bound
       Real.sqrt 2 ^ 3 = (Real.sqrt 2 ^ 2) * Real.sqrt 2 := by ring
       _ = 2 * Real.sqrt 2 := by rw [Real.sq_sqrt (by norm_num)]
   rwa [heq] at h
+
+/-- 由两组 2×2 自伴对合矩阵构造真实的张量积 CHSH 四元组：
+    `A⊗I, A'⊗I, I⊗B, I⊗B'`。全部交换关系来自 Kronecker 乘法律。 -/
+def tensor_CHSH_Tuple
+    (A A' B B' : Matrix (Fin 2) (Fin 2) ℂ)
+    (hA : A * A = 1) (hA' : A' * A' = 1)
+    (hB : B * B = 1) (hB' : B' * B' = 1)
+    (hA_sa : Aᴴ = A) (hA'_sa : A'ᴴ = A')
+    (hB_sa : Bᴴ = B) (hB'_sa : B'ᴴ = B') :
+    IsCHSHTuple
+      (A ⊗ₖ (1 : Matrix (Fin 2) (Fin 2) ℂ))
+      (A' ⊗ₖ (1 : Matrix (Fin 2) (Fin 2) ℂ))
+      ((1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ B)
+      ((1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ B') where
+  A₀_inv := by
+    calc
+      (A ⊗ₖ 1) * (A ⊗ₖ 1) = (A * A) ⊗ₖ (1 * 1) :=
+        (Matrix.mul_kronecker_mul A A 1 1).symm
+      _ = 1 := by rw [hA, Matrix.one_mul, Matrix.one_kronecker_one]
+  A₁_inv := by
+    calc
+      (A' ⊗ₖ 1) * (A' ⊗ₖ 1) = (A' * A') ⊗ₖ (1 * 1) :=
+        (Matrix.mul_kronecker_mul A' A' 1 1).symm
+      _ = 1 := by rw [hA', Matrix.one_mul, Matrix.one_kronecker_one]
+  B₀_inv := by
+    calc
+      (1 ⊗ₖ B) * (1 ⊗ₖ B) = (1 * 1) ⊗ₖ (B * B) :=
+        (Matrix.mul_kronecker_mul 1 1 B B).symm
+      _ = 1 := by rw [hB, Matrix.one_mul, Matrix.one_kronecker_one]
+  B₁_inv := by
+    calc
+      (1 ⊗ₖ B') * (1 ⊗ₖ B') = (1 * 1) ⊗ₖ (B' * B') :=
+        (Matrix.mul_kronecker_mul 1 1 B' B').symm
+      _ = 1 := by rw [hB', Matrix.one_mul, Matrix.one_kronecker_one]
+  A₀_sa := by
+    change (A ⊗ₖ 1)ᴴ = A ⊗ₖ 1
+    rw [Matrix.conjTranspose_kronecker, hA_sa, Matrix.conjTranspose_one]
+  A₁_sa := by
+    change (A' ⊗ₖ 1)ᴴ = A' ⊗ₖ 1
+    rw [Matrix.conjTranspose_kronecker, hA'_sa, Matrix.conjTranspose_one]
+  B₀_sa := by
+    change (1 ⊗ₖ B)ᴴ = 1 ⊗ₖ B
+    rw [Matrix.conjTranspose_kronecker, hB_sa, Matrix.conjTranspose_one]
+  B₁_sa := by
+    change (1 ⊗ₖ B')ᴴ = 1 ⊗ₖ B'
+    rw [Matrix.conjTranspose_kronecker, hB'_sa, Matrix.conjTranspose_one]
+  A₀B₀_commutes := by
+    calc
+      (A ⊗ₖ 1) * (1 ⊗ₖ B) = (A * 1) ⊗ₖ (1 * B) :=
+        (Matrix.mul_kronecker_mul A 1 1 B).symm
+      _ = A ⊗ₖ B := by rw [Matrix.mul_one, Matrix.one_mul]
+      _ = (1 * A) ⊗ₖ (B * 1) := by rw [Matrix.one_mul, Matrix.mul_one]
+      _ = (1 ⊗ₖ B) * (A ⊗ₖ 1) := Matrix.mul_kronecker_mul 1 A B 1
+  A₀B₁_commutes := by
+    calc
+      (A ⊗ₖ 1) * (1 ⊗ₖ B') = (A * 1) ⊗ₖ (1 * B') :=
+        (Matrix.mul_kronecker_mul A 1 1 B').symm
+      _ = A ⊗ₖ B' := by rw [Matrix.mul_one, Matrix.one_mul]
+      _ = (1 * A) ⊗ₖ (B' * 1) := by rw [Matrix.one_mul, Matrix.mul_one]
+      _ = (1 ⊗ₖ B') * (A ⊗ₖ 1) := Matrix.mul_kronecker_mul 1 A B' 1
+  A₁B₀_commutes := by
+    calc
+      (A' ⊗ₖ 1) * (1 ⊗ₖ B) = (A' * 1) ⊗ₖ (1 * B) :=
+        (Matrix.mul_kronecker_mul A' 1 1 B).symm
+      _ = A' ⊗ₖ B := by rw [Matrix.mul_one, Matrix.one_mul]
+      _ = (1 * A') ⊗ₖ (B * 1) := by rw [Matrix.one_mul, Matrix.mul_one]
+      _ = (1 ⊗ₖ B) * (A' ⊗ₖ 1) := Matrix.mul_kronecker_mul 1 A' B 1
+  A₁B₁_commutes := by
+    calc
+      (A' ⊗ₖ 1) * (1 ⊗ₖ B') = (A' * 1) ⊗ₖ (1 * B') :=
+        (Matrix.mul_kronecker_mul A' 1 1 B').symm
+      _ = A' ⊗ₖ B' := by rw [Matrix.mul_one, Matrix.one_mul]
+      _ = (1 * A') ⊗ₖ (B' * 1) := by rw [Matrix.one_mul, Matrix.mul_one]
+      _ = (1 ⊗ₖ B') * (A' ⊗ₖ 1) := Matrix.mul_kronecker_mul 1 A' B' 1
+
+/-- 具体张量积 CHSH 算子的 L2 算子范数不超过 `2√2`。 -/
+theorem Tsirelson_Tensor_Product_L2_Norm_Bound
+    (A A' B B' : Matrix (Fin 2) (Fin 2) ℂ)
+    (hA : A * A = 1) (hA' : A' * A' = 1)
+    (hB : B * B = 1) (hB' : B' * B' = 1)
+    (hA_sa : Aᴴ = A) (hA'_sa : A'ᴴ = A')
+    (hB_sa : Bᴴ = B) (hB'_sa : B'ᴴ = B') :
+    ‖(A ⊗ₖ 1) * (1 ⊗ₖ B) + (A ⊗ₖ 1) * (1 ⊗ₖ B') +
+      (A' ⊗ₖ 1) * (1 ⊗ₖ B) - (A' ⊗ₖ 1) * (1 ⊗ₖ B')‖ ≤ 2 * Real.sqrt 2 := by
+  exact Tsirelson_Matrix_L2_Norm_Bound _ _ _ _
+    (tensor_CHSH_Tuple A A' B B' hA hA' hB hB' hA_sa hA'_sa hB_sa hB'_sa)
 
 /-- REQ-INT-397 的数值预备引理（非Tsirelson问题证明）
 
@@ -825,9 +913,9 @@ end SiegelPhiPi.Meta
 
 /-
 当前证据口径:
-- 实质 theorem: 14
+- 实质 theorem: 15
 - 编译型 smoke examples: 17
 - sorry: 0
-- 公理审计目标: 14/14
+- 公理审计目标: 15/15
 - 历史请求数、α/β/γ分级与“完备度100%”不再作为证明状态
 -/
