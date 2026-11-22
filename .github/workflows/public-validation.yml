@@ -99,7 +99,7 @@ jobs:
             find "$LEAN_TOOLCHAIN_DIR" -maxdepth 2 -iname '*checker*' -print
           fi
 
-      - name: Axiom Audit (26定理＋17 examples；零sorryAx闸)
+      - name: Axiom Audit (28定理＋17 examples；零sorryAx闸)
         working-directory: lean_proofs
         run: |
           set -o pipefail

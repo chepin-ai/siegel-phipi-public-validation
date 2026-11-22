@@ -10,6 +10,8 @@ import Proofs
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellVertex_IntVec_NormSq_2
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellVertex_IntVec_Injective
 #print axioms SiegelPhiPi.GeometricCorrespondence.D4RootModel_Card_24
+#print axioms SiegelPhiPi.GeometricCorrespondence.D4Root_Bounded_Characterization
+#print axioms SiegelPhiPi.GeometricCorrespondence.D4RootModel_Eq_NormSqTwo
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_Code_Injective
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellAdjacent_Symmetric
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellAdjacent_Iff_DistSq_2

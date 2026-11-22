@@ -4,11 +4,11 @@ Siegel-φπ 万定理体系 — Attestation Requests 形式化证明
 日期: 2026-11-22
 
 本文件为真实Lean 4编译轨，不以请求数或历史α/β/γ标签冒充证明状态。
-- 26个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
+- 28个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
 - example的历史注释仅记录请求来源，不获得定理地位；全部声明不依赖sorryAx
 - π超越性：固定Lindemann-Weierstrass PR完整证明，不再保留开放sorry
 - Kleene第二递归定理、KL零散度判据、矩阵L2及具体张量积Tsirelson界已纳入
-- 当前版本以26/26公理审计为准；历史run#6仅对应语义收割前版本
+- 当前版本以28/28公理审计为准；历史run#6仅对应语义收割前版本
 - α/β/γ仅为项目内部分级，不是外部数学认证
 
 "The system is the proof."
@@ -260,6 +260,60 @@ theorem TwentyFourCellVertex_IntVec_Injective :
 theorem D4RootModel_Card_24 : D4RootModel.ncard = 24 := by
   rw [D4RootModel, Set.ncard_range_of_injective TwentyFourCellVertex_IntVec_Injective]
   simpa [Nat.card_eq_fintype_card] using TwentyFourCell_VertexCard_24
+
+/-- 把 `Fin 3` 的0/1/2平移为整数-1/0/1，用于有界根向量分类。 -/
+def boundedD4Vec (c : Fin 4 → Fin 3) : Fin 4 → ℤ := fun i => ((c i).val : ℤ) - 1
+
+/-- 81个有界向量中，平方范数2者恰好全部来自24-胞顶点。 -/
+set_option maxRecDepth 100000 in
+theorem D4Root_Bounded_Characterization :
+    ∀ c : Fin 4 → Fin 3, d4Dot (boundedD4Vec c) (boundedD4Vec c) = 2 →
+      ∃ v : TwentyFourCellVertex, twentyFourCellVertexToIntVec v = boundedD4Vec c := by
+  decide
+
+/-- D4RootModel 的完整刻画：不多不少，正是全部平方范数2的整数四维向量。 -/
+theorem D4RootModel_Eq_NormSqTwo :
+    D4RootModel = {x : Fin 4 → ℤ | d4Dot x x = 2} := by
+  ext x
+  change (∃ v : TwentyFourCellVertex, twentyFourCellVertexToIntVec v = x) ↔ d4Dot x x = 2
+  constructor
+  · rintro ⟨v, rfl⟩
+    exact TwentyFourCellVertex_IntVec_NormSq_2 v
+  · intro hx
+    have hsum : ∑ j, x j * x j = 2 := hx
+    have hsq (i : Fin 4) : x i * x i ≤ 2 := by
+      calc
+        x i * x i ≤ ∑ j, x j * x j :=
+          Finset.single_le_sum (fun j _ => mul_self_nonneg (x j)) (Finset.mem_univ i)
+        _ = 2 := hsum
+    have hlower (i : Fin 4) : -1 ≤ x i := by
+      by_contra h
+      have hxi : x i ≤ -2 := by omega
+      have hp : 0 ≤ (-x i - 2) * (-x i) :=
+        mul_nonneg (by omega) (by omega)
+      nlinarith [hsq i]
+    have hupper (i : Fin 4) : x i ≤ 1 := by
+      by_contra h
+      have hxi : 2 ≤ x i := by omega
+      have hp : 0 ≤ (x i - 2) * x i :=
+        mul_nonneg (by omega) (by omega)
+      nlinarith [hsq i]
+    let c : Fin 4 → Fin 3 := fun i =>
+      ⟨(x i + 1).toNat, by
+        have hl := hlower i
+        have hu := hupper i
+        omega⟩
+    have hcx : boundedD4Vec c = x := by
+      funext i
+      simp only [boundedD4Vec, c]
+      have hl := hlower i
+      have hu := hupper i
+      omega
+    have hc : d4Dot (boundedD4Vec c) (boundedD4Vec c) = 2 := by
+      rw [hcx]
+      exact hx
+    obtain ⟨v, hv⟩ := D4Root_Bounded_Characterization c hc
+    exact ⟨v, hv.trans hcx⟩
 
 /-- 可计算顶点编码，用于把每条无向边唯一定向。 -/
 def twentyFourCellCode (v : TwentyFourCellVertex) : ℕ :=
