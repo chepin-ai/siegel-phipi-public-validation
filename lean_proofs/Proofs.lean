@@ -264,8 +264,8 @@ theorem D4RootModel_Card_24 : D4RootModel.ncard = 24 := by
 /-- 把 `Fin 3` 的0/1/2平移为整数-1/0/1，用于有界根向量分类。 -/
 def boundedD4Vec (c : Fin 4 → Fin 3) : Fin 4 → ℤ := fun i => ((c i).val : ℤ) - 1
 
-/-- 81个有界向量中，平方范数2者恰好全部来自24-胞顶点。 -/
 set_option maxRecDepth 100000 in
+/-- 81个有界向量中，平方范数2者恰好全部来自24-胞顶点。 -/
 theorem D4Root_Bounded_Characterization :
     ∀ c : Fin 4 → Fin 3, d4Dot (boundedD4Vec c) (boundedD4Vec c) = 2 →
       ∃ v : TwentyFourCellVertex, twentyFourCellVertexToIntVec v = boundedD4Vec c := by
