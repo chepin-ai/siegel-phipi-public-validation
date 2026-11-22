@@ -4,6 +4,8 @@ import Proofs
 
 
 
+#print axioms SiegelPhiPi.GeometricCorrespondence.Birkhoff_Extreme_Points_Are_Permutations
+
 #print axioms SiegelPhiPi.SIUPiCore.KL_Divergence_Nonnegative
 #print axioms SiegelPhiPi.SIUPiCore.KL_Divergence_Eq_Zero_Iff
 #print axioms SiegelPhiPi.SIUPiCore.CosSq_Integral_Pi_Half

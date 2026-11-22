@@ -4,11 +4,11 @@ Siegel-φπ 万定理体系 — Attestation Requests 形式化证明
 日期: 2026-11-22
 
 本文件为真实Lean 4编译轨，不以请求数或历史α/β/γ标签冒充证明状态。
-- 15个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
+- 16个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
 - example的历史注释仅记录请求来源，不获得定理地位；全部声明不依赖sorryAx
 - π超越性：固定Lindemann-Weierstrass PR完整证明，不再保留开放sorry
 - Kleene第二递归定理、KL零散度判据、矩阵L2及具体张量积Tsirelson界已纳入
-- 当前版本以15/15公理审计为准；历史run#6仅对应语义收割前版本
+- 当前版本以16/16公理审计为准；历史run#6仅对应语义收割前版本
 - α/β/γ仅为项目内部分级，不是外部数学认证
 
 "The system is the proof."
@@ -28,6 +28,7 @@ import Mathlib.Data.Finset.Basic
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.GroupTheory.Perm.Basic
+import Mathlib.Analysis.Convex.Birkhoff
 import Mathlib.Algebra.Star.CHSH
 import Mathlib.LinearAlgebra.Matrix.Kronecker
 import Mathlib.Analysis.CStarAlgebra.Matrix
@@ -44,7 +45,7 @@ import Mathlib.NumberTheory.Transcendental.Lindemann.Basic
 import Mathlib.RingTheory.Localization.Integral
 
 open scoped BigOperators
-open scoped Matrix.Norms.L2Operator MatrixOrder Kronecker
+open scoped Matrix Matrix.Norms.L2Operator MatrixOrder Kronecker
 
 -- ============================================
 -- 第一部分: 核心结构恒等式 (4个请求)
@@ -187,18 +188,18 @@ example :
   unfold BirkhoffB4_VertexCount TwentyFourCell_VertexCount
   norm_num
 
-/-- REQ-INT-083: Birkhoff.B4 ≃ 24Cell (同构声明)
-    
-    严格性说明: 此"同构"为组合同构，非度量同构。
-    Birkhoff B₄ 与 24-胞在组合结构 (面格) 上不同，
-    但在 **S₄ 对称群作用** 下等价。
-    
-    形式化上，我们证明它们的 **自同构群有共同子群 S₄**。
--/
-def Birkhoff_24Cell_S4_Common :
+/-- S₄ 的恒等群等价构造。仅作类型系统 witness，
+    不声称证明 Birkhoff 多胞体或24-胞的自同构群。 -/
+def S4_SelfEquivalence :
     Σ' (G : Type) (_ : Group G), G ≃* Equiv.Perm (Fin 4) :=
-  -- 群等价本身是Type而非Prop；用Σ'构造 witness，恒等群等价给出共同S₄
   ⟨Equiv.Perm (Fin 4), inferInstance, MulEquiv.refl _⟩
+
+/-- Birkhoff 定理的非占位形式：4×4 双随机矩阵的极值点集合
+    正好是 S₄ 置换矩阵集合。直接复用 mathlib 的 Hall 归纳证明。 -/
+theorem Birkhoff_Extreme_Points_Are_Permutations :
+    Set.extremePoints ℝ (doublyStochastic ℝ (Fin 4)) =
+      {σ.permMatrix ℝ | σ : Equiv.Perm (Fin 4)} := by
+  exact extremePoints_doublyStochastic
 
 /-- REQ-INT-082: 24Cell.CWComplex ≃ D4.VoronoiCell
     
@@ -499,7 +500,7 @@ theorem Tsirelson_Ordered_Star_Algebra_Bound
     上界来自有序星环形式；将第一个观测元取反得到下界；
     自伴元的双侧序界再转化为范数界。 -/
 theorem Tsirelson_Norm_Bound_CStar
-    {R : Type} [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
+    {R : Type*} [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
     [Algebra ℝ R] [IsOrderedModule ℝ R] [StarModule ℝ R]
     [NormSMulClass ℝ R] [NormOneClass R]
     (A A' B B' : R) (T : IsCHSHTuple A A' B B') :
@@ -913,9 +914,9 @@ end SiegelPhiPi.Meta
 
 /-
 当前证据口径:
-- 实质 theorem: 15
+- 实质 theorem: 16
 - 编译型 smoke examples: 17
 - sorry: 0
-- 公理审计目标: 15/15
+- 公理审计目标: 16/16
 - 历史请求数、α/β/γ分级与“完备度100%”不再作为证明状态
 -/
