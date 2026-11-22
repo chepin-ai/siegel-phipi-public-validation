@@ -578,30 +578,30 @@ def tensor_CHSH_Tuple
     calc
       (A ⊗ₖ 1) * (A ⊗ₖ 1) = (A * A) ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A A 1 1).symm
-      _ = 1 := by
-        simpa only [hA, one_mul_one_matrix] using
-          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
+      _ = (1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
+        rw [hA, one_mul_one_matrix]
+      _ = 1 := Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ)
   A₁_inv := by
     calc
       (A' ⊗ₖ 1) * (A' ⊗ₖ 1) = (A' * A') ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A' A' 1 1).symm
-      _ = 1 := by
-        simpa only [hA', one_mul_one_matrix] using
-          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
+      _ = (1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
+        rw [hA', one_mul_one_matrix]
+      _ = 1 := Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ)
   B₀_inv := by
     calc
       (1 ⊗ₖ B) * (1 ⊗ₖ B) = (1 * 1) ⊗ₖ (B * B) :=
         (Matrix.mul_kronecker_mul 1 1 B B).symm
-      _ = 1 := by
-        simpa only [hB, one_mul_one_matrix] using
-          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
+      _ = (1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
+        rw [hB, one_mul_one_matrix]
+      _ = 1 := Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ)
   B₁_inv := by
     calc
       (1 ⊗ₖ B') * (1 ⊗ₖ B') = (1 * 1) ⊗ₖ (B' * B') :=
         (Matrix.mul_kronecker_mul 1 1 B' B').symm
-      _ = 1 := by
-        simpa only [hB', one_mul_one_matrix] using
-          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
+      _ = (1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ (1 : Matrix (Fin 2) (Fin 2) ℂ) := by
+        rw [hB', one_mul_one_matrix]
+      _ = 1 := Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ)
   A₀_sa := by
     change (A ⊗ₖ 1)ᴴ = A ⊗ₖ 1
     rw [Matrix.conjTranspose_kronecker, hA_sa, Matrix.conjTranspose_one (n := Fin 2) (α := ℂ)]
