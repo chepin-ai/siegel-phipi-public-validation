@@ -593,16 +593,16 @@ def tensor_CHSH_Tuple
       _ = 1 := by rw [hB', Matrix.one_mul, Matrix.one_kronecker_one]
   A₀_sa := by
     change (A ⊗ₖ 1)ᴴ = A ⊗ₖ 1
-    rw [Matrix.conjTranspose_kronecker, hA_sa, Matrix.conjTranspose_one]
+    rw [Matrix.conjTranspose_kronecker, hA_sa, Matrix.conjTranspose_one (n := Fin 2) (α := ℂ)]
   A₁_sa := by
     change (A' ⊗ₖ 1)ᴴ = A' ⊗ₖ 1
-    rw [Matrix.conjTranspose_kronecker, hA'_sa, Matrix.conjTranspose_one]
+    rw [Matrix.conjTranspose_kronecker, hA'_sa, Matrix.conjTranspose_one (n := Fin 2) (α := ℂ)]
   B₀_sa := by
     change (1 ⊗ₖ B)ᴴ = 1 ⊗ₖ B
-    rw [Matrix.conjTranspose_kronecker, hB_sa, Matrix.conjTranspose_one]
+    rw [Matrix.conjTranspose_kronecker, hB_sa, Matrix.conjTranspose_one (n := Fin 2) (α := ℂ)]
   B₁_sa := by
     change (1 ⊗ₖ B')ᴴ = 1 ⊗ₖ B'
-    rw [Matrix.conjTranspose_kronecker, hB'_sa, Matrix.conjTranspose_one]
+    rw [Matrix.conjTranspose_kronecker, hB'_sa, Matrix.conjTranspose_one (n := Fin 2) (α := ℂ)]
   A₀B₀_commutes := by
     calc
       (A ⊗ₖ 1) * (1 ⊗ₖ B) = (A * 1) ⊗ₖ (1 * B) :=
