@@ -11,6 +11,8 @@ import Proofs
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellVertex_IntVec_Injective
 #print axioms SiegelPhiPi.GeometricCorrespondence.D4RootModel_Card_24
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_Code_Injective
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellAdjacent_Symmetric
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellAdjacent_Iff_DistSq_2
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_Adjacent_Degree_8
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_EdgeCard_96
 

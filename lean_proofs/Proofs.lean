@@ -4,11 +4,11 @@ Siegel-φπ 万定理体系 — Attestation Requests 形式化证明
 日期: 2026-11-22
 
 本文件为真实Lean 4编译轨，不以请求数或历史α/β/γ标签冒充证明状态。
-- 24个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
+- 26个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
 - example的历史注释仅记录请求来源，不获得定理地位；全部声明不依赖sorryAx
 - π超越性：固定Lindemann-Weierstrass PR完整证明，不再保留开放sorry
 - Kleene第二递归定理、KL零散度判据、矩阵L2及具体张量积Tsirelson界已纳入
-- 当前版本以24/24公理审计为准；历史run#6仅对应语义收割前版本
+- 当前版本以26/26公理审计为准；历史run#6仅对应语义收割前版本
 - α/β/γ仅为项目内部分级，不是外部数学认证
 
 "The system is the proof."
@@ -275,6 +275,21 @@ def TwentyFourCellAdjacent (v w : TwentyFourCellVertex) : Prop :=
 instance (v w : TwentyFourCellVertex) : Decidable (TwentyFourCellAdjacent v w) := by
   unfold TwentyFourCellAdjacent
   infer_instance
+
+set_option maxRecDepth 100000 in
+/-- 邻接关系对称，因此可作为无向图关系。 -/
+theorem TwentyFourCellAdjacent_Symmetric :
+    ∀ v w : TwentyFourCellVertex, TwentyFourCellAdjacent v w ↔ TwentyFourCellAdjacent w v := by
+  decide
+
+set_option maxRecDepth 100000 in
+/-- 对24-胞根向量，内积1邻接恰好等价于平方欧氏距离为2。 -/
+theorem TwentyFourCellAdjacent_Iff_DistSq_2 (v w : TwentyFourCellVertex) :
+    TwentyFourCellAdjacent v w ↔
+      d4Dot (fun j => twentyFourCellVertexToIntVec v j - twentyFourCellVertexToIntVec w j)
+        (fun j => twentyFourCellVertexToIntVec v j - twentyFourCellVertexToIntVec w j) = 2 := by
+  revert v w
+  decide
 
 set_option maxRecDepth 100000 in
 /-- 每个顶点恰有 8 个邻点；24×8=192 是有序邻接对数。 -/
