@@ -1,0 +1,11 @@
+name = "attestation_proofs"
+defaultTargets = ["Proofs"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+# 实验轨：固定Lindemann-Weierstrass PR提交，禁止master漂移
+rev = "4ecbbfd4570fa1dde086dffd72bc5dec5a728042"
+
+[[lean_lib]]
+name = "Proofs"

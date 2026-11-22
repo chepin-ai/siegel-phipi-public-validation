@@ -1,0 +1,224 @@
+name: Public Lean Validation
+
+# 公开最小验证仓：使用公共runner，不消耗私域CI额度
+# 真实编译、内核重放、公理审计与nanoda正负对照一次完成
+on:
+  push:
+    paths:
+      - 'lean_proofs/**'
+      - '.github/workflows/public-validation.yml'
+  workflow_dispatch:
+
+jobs:
+  lean-compile:
+    name: Export + Nanoda Independent Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          for i in 1 2 3 4; do
+            if curl -sSfL --max-time 60 https://elan.lean-lang.org/elan-init.sh | sh -s -- -y --default-toolchain none; then
+              echo "elan install OK (attempt $i)"; break
+            fi
+            echo "attempt $i failed, backoff..."; sleep $((i*20))
+            [ $i -eq 4 ] && exit 1
+          done
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      # 全链路走GitHub releases；toolchain与mathlib均由仓内锁文件固定
+      # 不再读取mathlib master，避免上游漂移改变验证对象
+      - name: Toolchain Offline Install (GitHub releases直连)
+        working-directory: lean_proofs
+        run: |
+          set -e
+          # 1. 仓内固定toolchain（必须与锁定的mathlib一致）
+          TC=$(cat lean-toolchain)
+          echo "pinned toolchain: $TC"
+          VER=${TC##*:}                       # v4.35.0 / v4.36.0-rc2
+          DIR=$(echo "$TC" | sed 's|/|--|; s|:|---|')  # elan目录命名 sanitize
+          echo "version=$VER dir=$DIR"
+          # 2. GitHub releases直连下载（releases.lean-lang.org的302同源目标）
+          for i in 1 2 3 4; do
+            if curl -sSfL --max-time 300 \
+                 -o /tmp/lean.tar.zst \
+                 "https://github.com/leanprover/lean4/releases/download/${VER}/lean-${VER#v}-linux.tar.zst"; then
+              echo "download OK (attempt $i)"; break
+            fi
+            echo "download attempt $i failed, backoff..."; sleep $((i*15))
+            [ $i -eq 4 ] && exit 1
+          done
+          ls -lh /tmp/lean.tar.zst
+          # 3. 手动安装到elan toolchain目录（elan检测到已存在则跳过下载）
+          mkdir -p "$HOME/.elan/toolchains/$DIR"
+          tar -xf /tmp/lean.tar.zst -C "$HOME/.elan/toolchains/$DIR" --strip-components=1
+          "$HOME/.elan/toolchains/$DIR/bin/lean" --version
+          "$HOME/.elan/toolchains/$DIR/bin/lake" --version
+
+      - name: Lockfile Gate (禁止bare update)
+        working-directory: lean_proofs
+        run: |
+          test -f lake-manifest.json
+          python3 -c 'import json; m=json.load(open("lake-manifest.json")); p=next(p for p in m["packages"] if p["name"]=="mathlib"); assert p["rev"]=="4ecbbfd4570fa1dde086dffd72bc5dec5a728042"'
+          echo "lockfile OK; cache get will materialize locked packages"
+
+      - name: Resource Watchdog (pre-cache)
+        run: df -h /; free -h
+
+      - name: Mathlib Cache Get (独立step)
+        working-directory: lean_proofs
+        run: |
+          export MATHLIB_CACHE_GET_URL="https://cache.mathlib.org/mathlib4"
+          lake exe cache get
+          test "$(git -C .lake/packages/mathlib rev-parse HEAD)" = "4ecbbfd4570fa1dde086dffd72bc5dec5a728042"
+          cmp lean-toolchain .lake/packages/mathlib/lean-toolchain
+          echo "locked dependency materialization OK"
+
+      - name: Resource Watchdog (post-cache)
+        run: df -h /; free -h
+
+      - name: Lake Build (独立step)
+        working-directory: lean_proofs
+        env:
+          LEAN_NUM_THREADS: "1"
+        run: |
+          free -h
+          lake build 2>&1 | tee build.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Lean4checker Fresh Replay
+        working-directory: lean_proofs
+        run: lake env lean4checker --fresh Proofs
+
+      - name: Axiom Audit (31定理；零sorryAx闸)
+        working-directory: lean_proofs
+        run: |
+          set -o pipefail
+          lake env lean Audit.lean 2>&1 | tee axiom-audit.log
+          python3 audit_axioms.py Audit.lean axiom-audit.log
+
+      - name: Resource Watchdog (post-build)
+        if: always()
+        run: df -h /; free -h
+
+      - name: Upload Manifest + Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-manifest-public
+          path: |
+            lean_proofs/lake-manifest.json
+            lean_proofs/lean-toolchain
+            lean_proofs/build.log
+            lean_proofs/axiom-audit.log
+          retention-days: 30
+
+      - name: Sorry Audit (文本独立闸)
+        if: always()
+        working-directory: lean_proofs
+        run: |
+          echo "=== sorry 命令审计（注释不计入） ==="
+          if grep -nE '^[[:space:]]*(·[[:space:]]*)?sorry\b' Proofs.lean; then
+            echo "发现sorry命令，实验轨拒绝通过"; exit 1
+          else
+            echo "SORRY_COMMANDS=0"
+          fi
+
+
+      - name: Install Rust for Current Nanoda
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Pinned lean4export
+        working-directory: lean_proofs
+        run: |
+          set -o pipefail
+          rm -rf /tmp/lean4export
+          git clone --filter=blob:none https://github.com/leanprover/lean4export.git /tmp/lean4export
+          git -C /tmp/lean4export checkout df81913eee5519d5a88ae5b0fd701b5298cc29ab
+          cp lean-toolchain /tmp/lean4export/lean-toolchain
+          cd /tmp/lean4export
+          lake build 2>&1 | tee /tmp/lean4export-build.log
+
+      - name: Export Proof Closure and Known-Bad Control
+        working-directory: lean_proofs
+        run: |
+          lake env /tmp/lean4export/.lake/build/bin/lean4export Proofs > proofs.ndjson
+          cat > Bad.lean <<'EOF'
+          theorem NanodaNegativeControl : False := by
+            sorry
+          EOF
+          lake env lean Bad.lean -o .lake/build/lib/lean/Bad.olean
+          lake env /tmp/lean4export/.lake/build/bin/lean4export Bad > bad.ndjson
+          sha256sum proofs.ndjson bad.ndjson > export-sha256.txt
+          wc -c proofs.ndjson bad.ndjson
+
+      - name: Build Current Nanoda (pinned by verifier)
+        run: |
+          set -o pipefail
+          rm -rf /tmp/nanoda_lib
+          git clone https://github.com/ammkrn/nanoda_lib.git /tmp/nanoda_lib
+          git -C /tmp/nanoda_lib checkout 0da9f98feadd3a0a2ef4b3dbcf52a298a6fef929
+          cd /tmp/nanoda_lib
+          cargo build --release --locked 2>&1 | tee /tmp/nanoda-build.log
+
+      - name: Nanoda Positive Check (three standard axioms only)
+        working-directory: lean_proofs
+        run: |
+          set -o pipefail
+          cat > nanoda-proofs.json <<'JSON'
+          {
+            "export_file_path": "proofs.ndjson",
+            "use_stdin": false,
+            "num_threads": 1,
+            "stack_size_bytes": 1073741824,
+            "permitted_axioms": ["propext", "Classical.choice", "Quot.sound"],
+            "unpermitted_axiom_hard_error": false,
+            "unsafe_permit_all_axioms": false,
+            "nat_extension": true,
+            "string_extension": true,
+            "pp_to_stdout": false,
+            "print_success_message": true
+          }
+          JSON
+          /tmp/nanoda_lib/target/release/nanoda_bin nanoda-proofs.json 2>&1 | tee nanoda-proofs.log
+
+      - name: Nanoda Negative Control (must reject sorryAx)
+        working-directory: lean_proofs
+        run: |
+          cat > nanoda-negative.json <<'JSON'
+          {
+            "export_file_path": "bad.ndjson",
+            "use_stdin": false,
+            "num_threads": 1,
+            "stack_size_bytes": 33554432,
+            "permitted_axioms": ["propext", "Classical.choice", "Quot.sound"],
+            "unpermitted_axiom_hard_error": false,
+            "unsafe_permit_all_axioms": false,
+            "nat_extension": true,
+            "string_extension": true,
+            "pp_to_stdout": false,
+            "print_success_message": true
+          }
+          JSON
+          set +e
+          /tmp/nanoda_lib/target/release/nanoda_bin nanoda-negative.json > nanoda-negative.log 2>&1
+          st=$?
+          set -e
+          cat nanoda-negative.log
+          if [ $st -eq 0 ]; then
+            echo "NEGATIVE_CONTROL=UNEXPECTED_ACCEPT"; exit 1
+          fi
+          echo "NEGATIVE_CONTROL=REJECTED_AS_EXPECTED"
+
+      - name: Upload Independent Kernel Evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-nanoda-evidence
+          path: |
+            lean_proofs/export-sha256.txt
+            lean_proofs/nanoda-*.json
+            lean_proofs/nanoda-*.log
+          retention-days: 30

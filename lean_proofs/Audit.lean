@@ -1,0 +1,34 @@
+import Proofs
+
+-- 全量定理公理足迹：只允许标准逻辑公理，不允许任何sorryAx。
+#print axioms SiegelPhiPi.CoreStructure.FiveCore_DimensionalSum
+#print axioms SiegelPhiPi.CoreStructure.FiveCore_EntropySum
+#print axioms SiegelPhiPi.CoreStructure.HiddenNuclei_EntropySum
+#print axioms SiegelPhiPi.CoreStructure.Emergence_Chain_Exists
+#print axioms SiegelPhiPi.GeometricCorrespondence.Birkhoff_24Cell_VertexCount_Equal
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_D4_Voronoi_Equivalent
+#print axioms SiegelPhiPi.GeometricCorrespondence.QuadrupleBinding_Exists
+#print axioms SiegelPhiPi.SIUPiCore.InformationGeometricFlow_Convergence
+#print axioms SiegelPhiPi.SIUPiCore.InformationGeometricFlow_KL_eq_zero_iff
+#print axioms SiegelPhiPi.SIUPiCore.KuramotoPi_CriticalCoupling
+#print axioms SiegelPhiPi.SIUPiCore.PiFineStructure_Formula
+#print axioms SiegelPhiPi.FLEEmbedding.FourSelfCatalysis_NoFixedPoint
+#print axioms SiegelPhiPi.FLEEmbedding.Kleene_Second_Recursion
+#print axioms SiegelPhiPi.FLEEmbedding.Consciousness_Completeness
+#print axioms SiegelPhiPi.FLEEmbedding.Kernel_Reliability
+#print axioms SiegelPhiPi.QuantumInformation.Tsirelson_Bound
+#print axioms SiegelPhiPi.QuantumInformation.Tsirelson_Norm_Bound_CStar
+#print axioms SiegelPhiPi.QuantumInformation.Tsirelson_Matrix_L2_Norm_Bound
+#print axioms SiegelPhiPi.QuantumInformation.Rational_Between_Classical_And_Tsirelson_Bound
+#print axioms SiegelPhiPi.LeanFormalization.φ_core_gt_one
+#print axioms SiegelPhiPi.LeanFormalization.φ_core_irrational
+#print axioms SiegelPhiPi.LeanFormalization.π_core_irrational
+#print axioms SiegelPhiPi.LeanFormalization.π_core_transcendental
+#print axioms SiegelPhiPi.LeanFormalization.FiveCoreType_card
+#print axioms SiegelPhiPi.HoloDB.D4_contains_in_F4
+#print axioms SiegelPhiPi.HoloDB.Leech_F4_Coordinatization
+#print axioms SiegelPhiPi.HoloDB.Spin8_D4_Isomorphism
+#print axioms SiegelPhiPi.HoloDB.DEC_RAFT_Correspondence
+#print axioms SiegelPhiPi.HoloDB.DerivedTriangle_Formula
+#print axioms SiegelPhiPi.Meta.Conditional_Consistency
+#print axioms SiegelPhiPi.Meta.Completeness_100Percent
