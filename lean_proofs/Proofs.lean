@@ -210,8 +210,8 @@ theorem Birkhoff_Extreme_Points_Card_24 :
   have hinj : Function.Injective (fun σ : Equiv.Perm (Fin 4) => σ.permMatrix ℝ) := by
     intro σ τ h
     ext j
-    have hentry := congrArg (fun M : Matrix (Fin 4) (Fin 4) ℝ => M (σ j) j) h
-    simpa [Equiv.Perm.permMatrix, PEquiv.toMatrix_apply] using hentry
+    have hentry := congrArg (fun M : Matrix (Fin 4) (Fin 4) ℝ => M j (σ j)) h
+    simpa [Equiv.Perm.permMatrix, PEquiv.toMatrix_apply, eq_comm] using hentry
   rw [Set.ncard_range_of_injective hinj]
   norm_num [Nat.card_eq_fintype_card, Fintype.card_perm, Nat.factorial]
 
