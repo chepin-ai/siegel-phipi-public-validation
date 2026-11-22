@@ -27,6 +27,7 @@ jobs:
             [ $i -eq 4 ] && exit 1
           done
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
+          echo "LEAN_TOOLCHAIN_DIR=$HOME/.elan/toolchains/$DIR" >> $GITHUB_ENV
 
       # 全链路走GitHub releases；toolchain与mathlib均由仓内锁文件固定
       # 不再读取mathlib master，避免上游漂移改变验证对象
@@ -90,9 +91,11 @@ jobs:
 
       - name: Lean4checker Fresh Replay
         working-directory: lean_proofs
-        run: lake env lean4checker --fresh Proofs
+        run: |
+          test -x "$LEAN_TOOLCHAIN_DIR/bin/lean4checker"
+          lake env "$LEAN_TOOLCHAIN_DIR/bin/lean4checker" --fresh Proofs
 
-      - name: Axiom Audit (31定理；零sorryAx闸)
+      - name: Axiom Audit (14定理＋17 examples；零sorryAx闸)
         working-directory: lean_proofs
         run: |
           set -o pipefail

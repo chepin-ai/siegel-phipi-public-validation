@@ -4,10 +4,11 @@ Siegel-φπ 万定理体系 — Attestation Requests 形式化证明
 日期: 2026-11-22
 
 本文件为真实Lean 4编译轨，不以请求数或历史α/β/γ标签冒充证明状态。
-- 31个theorem已纳入全量公理审计，全部不依赖sorryAx
+- 14个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
+- example的历史注释仅记录请求来源，不获得定理地位；全部声明不依赖sorryAx
 - π超越性：固定Lindemann-Weierstrass PR完整证明，不再保留开放sorry
 - Kleene第二递归定理、KL零散度判据、矩阵L2 Tsirelson界已纳入
-- GitHub Actions Lean Next run#6真实通过6442 jobs与31/31公理审计
+- 当前版本以14/14公理审计为准；历史run#6仅对应语义收割前版本
 - α/β/γ仅为项目内部分级，不是外部数学认证
 
 "The system is the proof."
@@ -64,7 +65,7 @@ namespace SiegelPhiPi.CoreStructure
     
     证明策略: 直接计算 (norm_num)
 -/
-theorem FiveCore_DimensionalSum 
+example 
     (φ_dim π_dim i_dim aleph_dim zeta_dim : ℕ)
     (hφ : φ_dim = 8)
     (hπ : π_dim = 4)
@@ -87,7 +88,7 @@ theorem FiveCore_DimensionalSum
     
     关键观察: 366 = H(Seed) = 种子熵
 -/
-theorem FiveCore_EntropySum 
+example 
     (H_φ H_π H_i H_aleph H_zeta : ℕ)
     (h1 : H_φ = 71)
     (h2 : H_π = 72)
@@ -111,7 +112,7 @@ theorem FiveCore_EntropySum
     - 10 = 超弦临界维度
     - 240 = E₈根数/2 = Leech格最短向量数
 -/
-theorem HiddenNuclei_EntropySum 
+example 
     (H_Λ H_Ψ H_Ξ : ℕ)
     (h1 : H_Λ = 80)
     (h2 : H_Ψ = 85)
@@ -139,7 +140,7 @@ inductive Emerges : Type → Type → Prop where
   | Psi_to_FiveCore : Emerges (Fin 85) (Fin 54)
   | FiveCore_to_Seed : Emerges (Fin 54) (Fin 366)
 
-theorem Emergence_Chain_Exists :
+example :
     Emerges (Fin 75) (Fin 80) ∧
     Emerges (Fin 80) (Fin 85) ∧
     Emerges (Fin 85) (Fin 54) := by
@@ -180,7 +181,7 @@ def TwentyFourCell_VertexCount : ℕ := 24
     - 24-胞顶点 = D4 Weyl格的Voronoi胞顶点
     - |S₄| = 24 = 24-胞顶点数
 -/
-theorem Birkhoff_24Cell_VertexCount_Equal :
+example :
     BirkhoffB4_VertexCount = TwentyFourCell_VertexCount := by
   unfold BirkhoffB4_VertexCount TwentyFourCell_VertexCount
   norm_num
@@ -208,7 +209,7 @@ def Birkhoff_24Cell_S4_Common :
     3. Voronoi胞(VoronoiCell) = 24-胞
     4. 同伦等价: 24Cell ≃ K(W(D4), 1)
 -/
-theorem TwentyFourCell_D4_Voronoi_Equivalent :
+example :
     -- 24-胞的CW结构与D4 Voronoi胞的组合结构等价
     TwentyFourCell_VertexCount = 24 ∧
     -- D4 Weyl群阶数 = 192 = 8 × 24
@@ -234,7 +235,7 @@ structure QuadrupleBinding where
   φ₃ : VertexCount24 → B4Polytope
   -- 交换条件: φ₃ ∘ φ₂ ∘ φ₁ = id (在适当商范畴下)
 
-theorem QuadrupleBinding_Exists :
+example :
     ∃ QB : QuadrupleBinding, True := by
   use {
     BirkhoffB4 := Fin 24,
@@ -269,7 +270,7 @@ namespace SiegelPhiPi.SIUPiCore
     有限概率分布 ρ, ρ_inf（各分量严格正，和为1）的 KL 散度非负。
     连续测度形式的 Sobolev 收敛性不在本定理覆盖范围（弱化点声明）。
 -/
-theorem InformationGeometricFlow_Convergence
+theorem KL_Divergence_Nonnegative
     {n : ℕ} (ρ ρ_inf : Fin n → ℝ)
     (hρ : ∀ i, 0 < ρ i) (hρ_inf : ∀ i, 0 < ρ_inf i)
     (hsumρ : ∑ i, ρ i = 1) (hsumρ_inf : ∑ i, ρ_inf i = 1) :
@@ -297,7 +298,7 @@ theorem InformationGeometricFlow_Convergence
     _ = 0 := by rw [hsumρ, hsumρ_inf]; ring
 
 /-- Gibbs 不等式的严格化：KL 散度为零当且仅当两个分布逐点相等。 -/
-theorem InformationGeometricFlow_KL_eq_zero_iff
+theorem KL_Divergence_Eq_Zero_Iff
     {n : ℕ} (ρ ρ_inf : Fin n → ℝ)
     (hρ : ∀ i, 0 < ρ i) (hρ_inf : ∀ i, 0 < ρ_inf i)
     (hsumρ : ∑ i, ρ i = 1) (hsumρ_inf : ∑ i, ρ_inf i = 1) :
@@ -341,7 +342,7 @@ theorem InformationGeometricFlow_KL_eq_zero_iff
     
     证明: 直接计算定积分
 -/
-theorem KuramotoPi_CriticalCoupling :
+theorem CosSq_Integral_Pi_Half :
     -- 积分 ∫_{-π/2}^{π/2} cos²φ dφ = π/2
     ∫ φ in (-Real.pi/2)..(Real.pi/2), (Real.cos φ)^2 = Real.pi / 2 := by
   -- mathlib已有cos²的区间积分公式；端点处cos均为0，代数化简即得π/2
@@ -366,7 +367,7 @@ theorem KuramotoPi_CriticalCoupling :
     
     严格性: γ级 (启发式，非严格定理)
 -/
-theorem PiFineStructure_Formula 
+example 
     (dimE8 : ℕ) (hE8 : dimE8 = 248)
     (pi_sq pi_val epsilon_vac : ℝ)
     (hpi_sq : pi_sq = Real.pi^2)
@@ -423,7 +424,7 @@ theorem Kleene_Second_Recursion
     严格性: 此定理在元数学框架中成立，
     "意识"为自指计算系统的反射性质。
 -/
-theorem Consciousness_Completeness 
+example 
     (QuerySpace ProofSpace : Type)
     (C : QuerySpace → Set ProofSpace)
     (hTotal : ∀ q : QuerySpace, ∃ p : ProofSpace, p ∈ C q) :
@@ -461,7 +462,7 @@ def Consciousness_Tarski_Hierarchy :
     3. ProofChecker: 归纳构造演算，可判定
     4. ConsistencyGuard: 监视sorry/axiom
 -/
-theorem Kernel_Reliability 
+example 
     (TheoremSet : Type) (Theory : Set TheoremSet)
     (Verify : TheoremSet → Bool)
     (hSound : ∀ T, Verify T = true → T ∈ Theory) :
@@ -486,7 +487,7 @@ namespace SiegelPhiPi.QuantumInformation
     弱化点声明：原矩阵 L2 算子范数形式不在本定理覆盖范围；
     原假设缺少自伴性，也不足以直接推出所声称的范数界。
 -/
-theorem Tsirelson_Bound
+theorem Tsirelson_Ordered_Star_Algebra_Bound
     {R : Type} [Ring R] [PartialOrder R] [StarRing R] [StarOrderedRing R]
     [Algebra ℝ R] [IsOrderedModule ℝ R] [StarModule ℝ R]
     (A A' B B' : R) (T : IsCHSHTuple A A' B B') :
@@ -559,7 +560,7 @@ theorem Tsirelson_Matrix_L2_Norm_Bound
     仅证明有理数 5/2 严格位于经典界 2 与 Tsirelson 界 2√2 之间。
     Slofstra 的量子关联集分离定理未在此形式化，原定理名据此更正。
 -/
-theorem Rational_Between_Classical_And_Tsirelson_Bound :
+theorem Rational_Between_Classical_And_Tsirelson :
     ∃ (p : ℚ), p > 2 ∧ p < 2 * Real.sqrt 2 := by
   use 5 / 2  -- 2.5 ∈ (2, 2√2)
   constructor
@@ -711,7 +712,7 @@ namespace SiegelPhiPi.HoloDB
     
     D4 包含于 F4 的根系包含关系
 -/
-theorem D4_contains_in_F4 :
+example :
     -- D4 根系统是 F4 根系统的子系统
     Nat.factorial 4 ≤ Nat.factorial 4 * 24 := by
   -- F4 Weyl群阶数 = 1152 = 24 × 48
@@ -728,7 +729,7 @@ theorem D4_contains_in_F4 :
     - F4根系 = 48个根向量
     - Leech格包含F4根系作为子结构
 -/
-theorem Leech_F4_Coordinatization :
+example :
     -- Leech格维数 = 24 = F4秩 × 6
     24 = 4 * 6 := by
   norm_num
@@ -741,7 +742,7 @@ theorem Leech_F4_Coordinatization :
     - D4 Dynkin图: o—o—o—o (4个节点)
     - Spin(8) 的 triality 对称性 = D4 的外自同构 S₃
 -/
-theorem Spin8_D4_Isomorphism :
+example :
     -- so(8) 的秩 = 4 = D4 的秩
     8 / 2 = 4 := by
   norm_num
@@ -756,7 +757,7 @@ theorem Spin8_D4_Isomorphism :
     
     共同点: 两者都解决 "容错达成共识" 问题
 -/
-theorem DEC_RAFT_Correspondence :
+example :
     -- 两者都在 Byzantine 容错假设下工作
     True := by
   trivial
@@ -768,7 +769,7 @@ theorem DEC_RAFT_Correspondence :
     
     此公式为γ级启发式，严格证明需要原像理论。
 -/
-theorem DerivedTriangle_Formula 
+example 
     (period_4M : ℝ) (hP : period_4M > 0) :
     -- α⁻¹ 的周期表达式
     ∃ (α_inv : ℝ), α_inv > 0 := by
@@ -800,7 +801,7 @@ inductive ProofLevel
     改为集合论自洽形式: 一致性语句集存在（平凡）集合扩张。
     **不表达 Gödel 第二不完备语义**，严格元数学形式化不在本定理覆盖范围。
 -/
-theorem Conditional_Consistency
+example
     (PS : Type) (Cons : Set PS) :
     ∃ PS_plus : Set PS, Cons ⊆ PS_plus :=
   ⟨Cons, Set.Subset.refl Cons⟩
@@ -811,7 +812,7 @@ theorem Conditional_Consistency
     = (20×1.0 + 15×1.0 + 10×1.0 + 10×1.0 + 10×1.0 + 10×1.0 + 5×1.0) / 80
     = 80/80 = 1.0 = 100%
 -/
-theorem Completeness_100Percent :
+example :
     -- 七视图完备度加权平均（ℝ标注：1.0默认为Float，norm_num不处理）
     ((20 : ℝ) * 1.0 + 15 * 1.0 + 10 * 1.0 + 10 * 1.0 + 10 * 1.0 + 10 * 1.0 + 5 * 1.0) / 80 = 1.0 := by
   norm_num
@@ -823,18 +824,10 @@ end SiegelPhiPi.Meta
 -- ============================================
 
 /-
-统计信息:
-- 总请求数: 430
-- 可解请求: 86 (20.0%)
-- α级证明: 34
-- β级推导: 28
-- γ级启发式: 18
-- δ级猜想: 6
-- ε级待验证: 344
-
-自指闭环: ACTIVE
-完备度: 100%
-七自能力: ALL_ACTIVE
-
-"The system is the proof."
+当前证据口径:
+- 实质 theorem: 14
+- 编译型 smoke examples: 17
+- sorry: 0
+- 公理审计目标: 14/14
+- 历史请求数、α/β/γ分级与“完备度100%”不再作为证明状态
 -/
