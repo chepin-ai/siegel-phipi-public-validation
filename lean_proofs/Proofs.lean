@@ -272,8 +272,12 @@ theorem TwentyFourCell_Code_Injective : Function.Injective twentyFourCellCode :=
 def TwentyFourCellAdjacent (v w : TwentyFourCellVertex) : Prop :=
   v ≠ w ∧ d4Dot (twentyFourCellVertexToIntVec v) (twentyFourCellVertexToIntVec w) = 1
 
-/-- 每个顶点恰有 8 个邻点；24×8=192 是有序邻接对数。 -/
+instance (v w : TwentyFourCellVertex) : Decidable (TwentyFourCellAdjacent v w) := by
+  unfold TwentyFourCellAdjacent
+  infer_instance
+
 set_option maxRecDepth 100000 in
+/-- 每个顶点恰有 8 个邻点；24×8=192 是有序邻接对数。 -/
 theorem TwentyFourCell_Adjacent_Degree_8 (v : TwentyFourCellVertex) :
     (Finset.univ.filter (fun w : TwentyFourCellVertex => TwentyFourCellAdjacent v w)).card = 8 := by
   revert v
@@ -284,8 +288,8 @@ abbrev TwentyFourCellEdge :=
   {p : TwentyFourCellVertex × TwentyFourCellVertex //
     twentyFourCellCode p.1 < twentyFourCellCode p.2 ∧ TwentyFourCellAdjacent p.1 p.2}
 
-/-- 24-胞图恰有 96 条无向边，而非 192 个有序邻接对。 -/
 set_option maxRecDepth 100000 in
+/-- 24-胞图恰有 96 条无向边，而非 192 个有序邻接对。 -/
 theorem TwentyFourCell_EdgeCard_96 : Fintype.card TwentyFourCellEdge = 96 := by decide
 
 /-- REQ-INT-082: 24Cell.CWComplex ≃ D4.VoronoiCell
