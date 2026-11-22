@@ -307,21 +307,14 @@ set_option maxRecDepth 100000 in
 /-- 24-胞图恰有 96 条无向边，而非 192 个有序邻接对。 -/
 theorem TwentyFourCell_EdgeCard_96 : Fintype.card TwentyFourCellEdge = 96 := by decide
 
-/-- REQ-INT-082: 24Cell.CWComplex ≃ D4.VoronoiCell
-    
-    24-胞作为CW复形与D4根格的Voronoi胞同伦等价。
-    
-    证明概要:
-    1. D4根格 = {x ∈ ℤ⁴ ∪ (ℤ+½)⁴ : Σxᵢ ≡ 0 (mod 2)}
-    2. D4* (对偶格) = D4 ∪ (D4 + (½,½,½,½))
-    3. Voronoi胞(VoronoiCell) = 24-胞
-    4. 同伦等价: 24Cell ≃ K(W(D4), 1)
--/
+/-- REQ-INT-082 的原始请求涉及24-胞CW结构与D4 Voronoi胞。
+
+    当前example仅保留两个可判定数值条件，不证明任何CW、凸几何、
+    Voronoi或同伦等价命题。D4RootModel及8正则96边图见上方已审计定理。
+    旧注释中的 `K(W(D4),1)` 同伦断言没有证明且与本例数值内容无关，已撤下。
+    后续若推进Voronoi等价，必须另建凸包、格与最近点层的真实定义。 -/
 example :
-    -- 24-胞的CW结构与D4 Voronoi胞的组合结构等价
-    TwentyFourCell_VertexCount = 24 ∧
-    -- D4 Weyl群阶数 = 192 = 8 × 24
-    Nat.factorial 4 = 24 := by
+    TwentyFourCell_VertexCount = 24 ∧ Nat.factorial 4 = 24 := by
   constructor
   · rfl
   · norm_num [Nat.factorial]
