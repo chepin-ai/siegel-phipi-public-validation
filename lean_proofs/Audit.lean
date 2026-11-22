@@ -7,6 +7,12 @@ import Proofs
 #print axioms SiegelPhiPi.GeometricCorrespondence.Birkhoff_Extreme_Points_Are_Permutations
 #print axioms SiegelPhiPi.GeometricCorrespondence.Birkhoff_Extreme_Points_Card_24
 #print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_VertexCard_24
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellVertex_IntVec_NormSq_2
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCellVertex_IntVec_Injective
+#print axioms SiegelPhiPi.GeometricCorrespondence.D4RootModel_Card_24
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_Code_Injective
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_Adjacent_Degree_8
+#print axioms SiegelPhiPi.GeometricCorrespondence.TwentyFourCell_EdgeCard_96
 
 #print axioms SiegelPhiPi.SIUPiCore.KL_Divergence_Nonnegative
 #print axioms SiegelPhiPi.SIUPiCore.KL_Divergence_Eq_Zero_Iff

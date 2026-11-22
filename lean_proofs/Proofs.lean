@@ -4,11 +4,11 @@ Siegel-φπ 万定理体系 — Attestation Requests 形式化证明
 日期: 2026-11-22
 
 本文件为真实Lean 4编译轨，不以请求数或历史α/β/γ标签冒充证明状态。
-- 18个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
+- 24个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
 - example的历史注释仅记录请求来源，不获得定理地位；全部声明不依赖sorryAx
 - π超越性：固定Lindemann-Weierstrass PR完整证明，不再保留开放sorry
 - Kleene第二递归定理、KL零散度判据、矩阵L2及具体张量积Tsirelson界已纳入
-- 当前版本以18/18公理审计为准；历史run#6仅对应语义收割前版本
+- 当前版本以24/24公理审计为准；历史run#6仅对应语义收割前版本
 - α/β/γ仅为项目内部分级，不是外部数学认证
 
 "The system is the proof."
@@ -232,6 +232,61 @@ def twentyFourCellVertexToVec (v : TwentyFourCellVertex) : Fin 4 → ℝ :=
 /-- 24-胞组合顶点类型的基数确为 24。 -/
 theorem TwentyFourCell_VertexCard_24 :
     Fintype.card TwentyFourCellVertex = 24 := by decide
+
+/-- 同一顶点的整数坐标版本，避免用实数等式做有限判定。 -/
+def twentyFourCellVertexToIntVec (v : TwentyFourCellVertex) : Fin 4 → ℤ :=
+  fun j =>
+    if j = v.1.1.1 then (if v.2.1 = 0 then -1 else 1)
+    else if j = v.1.1.2 then (if v.2.2 = 0 then -1 else 1)
+    else 0
+
+/-- D4 根系模型：24 个 `(±1,±1,0,0)` 整数向量的像集。 -/
+def D4RootModel : Set (Fin 4 → ℤ) := Set.range twentyFourCellVertexToIntVec
+
+/-- 整数点积；平方范数取 `d4Dot x x`。 -/
+def d4Dot (x y : Fin 4 → ℤ) : ℤ := ∑ j, x j * y j
+
+/-- 每个组合顶点都映到平方范数为 2 的 D4 根。 -/
+theorem TwentyFourCellVertex_IntVec_NormSq_2 (v : TwentyFourCellVertex) :
+    d4Dot (twentyFourCellVertexToIntVec v) (twentyFourCellVertexToIntVec v) = 2 := by
+  revert v
+  decide
+
+/-- 不同组合顶点具有不同整数坐标，故没有重复计数。 -/
+theorem TwentyFourCellVertex_IntVec_Injective :
+    Function.Injective twentyFourCellVertexToIntVec := by decide
+
+/-- D4 根系模型的元素数确为 24。 -/
+theorem D4RootModel_Card_24 : D4RootModel.ncard = 24 := by
+  rw [D4RootModel, Set.ncard_range_of_injective TwentyFourCellVertex_IntVec_Injective]
+  simpa [Nat.card_eq_fintype_card] using TwentyFourCell_VertexCard_24
+
+/-- 可计算顶点编码，用于把每条无向边唯一定向。 -/
+def twentyFourCellCode (v : TwentyFourCellVertex) : ℕ :=
+  4 * (4 * v.1.1.1.val + v.1.1.2.val) + 2 * v.2.1.val + v.2.2.val
+
+/-- 顶点编码单射，因此按编码定向不会合并不同顶点。 -/
+theorem TwentyFourCell_Code_Injective : Function.Injective twentyFourCellCode := by decide
+
+/-- 24-胞图邻接：不同顶点且整数内积为 1，等价于平方距离为 2。 -/
+def TwentyFourCellAdjacent (v w : TwentyFourCellVertex) : Prop :=
+  v ≠ w ∧ d4Dot (twentyFourCellVertexToIntVec v) (twentyFourCellVertexToIntVec w) = 1
+
+/-- 每个顶点恰有 8 个邻点；24×8=192 是有序邻接对数。 -/
+set_option maxRecDepth 100000 in
+theorem TwentyFourCell_Adjacent_Degree_8 (v : TwentyFourCellVertex) :
+    (Finset.univ.filter (fun w : TwentyFourCellVertex => TwentyFourCellAdjacent v w)).card = 8 := by
+  revert v
+  decide
+
+/-- 无向边模型：邻接顶点对按单射编码取唯一方向。 -/
+abbrev TwentyFourCellEdge :=
+  {p : TwentyFourCellVertex × TwentyFourCellVertex //
+    twentyFourCellCode p.1 < twentyFourCellCode p.2 ∧ TwentyFourCellAdjacent p.1 p.2}
+
+/-- 24-胞图恰有 96 条无向边，而非 192 个有序邻接对。 -/
+set_option maxRecDepth 100000 in
+theorem TwentyFourCell_EdgeCard_96 : Fintype.card TwentyFourCellEdge = 96 := by decide
 
 /-- REQ-INT-082: 24Cell.CWComplex ≃ D4.VoronoiCell
     

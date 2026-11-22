@@ -1,0 +1,128 @@
+name: Public Lean Quick
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lean-compile:
+    name: Lean Build + Axiom Audit Only
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          for i in 1 2 3 4; do
+            if curl -sSfL --max-time 60 https://elan.lean-lang.org/elan-init.sh | sh -s -- -y --default-toolchain none; then
+              echo "elan install OK (attempt $i)"; break
+            fi
+            echo "attempt $i failed, backoff..."; sleep $((i*20))
+            [ $i -eq 4 ] && exit 1
+          done
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      # 全链路走GitHub releases；toolchain与mathlib均由仓内锁文件固定
+      # 不再读取mathlib master，避免上游漂移改变验证对象
+      - name: Toolchain Offline Install (GitHub releases直连)
+        working-directory: lean_proofs
+        run: |
+          set -e
+          # 1. 仓内固定toolchain（必须与锁定的mathlib一致）
+          TC=$(cat lean-toolchain)
+          echo "pinned toolchain: $TC"
+          VER=${TC##*:}                       # v4.35.0 / v4.36.0-rc2
+          DIR=$(echo "$TC" | sed 's|/|--|; s|:|---|')  # elan目录命名 sanitize
+          echo "version=$VER dir=$DIR"
+          echo "LEAN_TOOLCHAIN_DIR=$HOME/.elan/toolchains/$DIR" >> $GITHUB_ENV
+          # 2. GitHub releases直连下载（releases.lean-lang.org的302同源目标）
+          for i in 1 2 3 4; do
+            if curl -sSfL --max-time 300 \
+                 -o /tmp/lean.tar.zst \
+                 "https://github.com/leanprover/lean4/releases/download/${VER}/lean-${VER#v}-linux.tar.zst"; then
+              echo "download OK (attempt $i)"; break
+            fi
+            echo "download attempt $i failed, backoff..."; sleep $((i*15))
+            [ $i -eq 4 ] && exit 1
+          done
+          ls -lh /tmp/lean.tar.zst
+          # 3. 手动安装到elan toolchain目录（elan检测到已存在则跳过下载）
+          mkdir -p "$HOME/.elan/toolchains/$DIR"
+          tar -xf /tmp/lean.tar.zst -C "$HOME/.elan/toolchains/$DIR" --strip-components=1
+          "$HOME/.elan/toolchains/$DIR/bin/lean" --version
+          "$HOME/.elan/toolchains/$DIR/bin/lake" --version
+
+      - name: Lockfile Gate (禁止bare update)
+        working-directory: lean_proofs
+        run: |
+          test -f lake-manifest.json
+          python3 -c 'import json; m=json.load(open("lake-manifest.json")); p=next(p for p in m["packages"] if p["name"]=="mathlib"); assert p["rev"]=="4ecbbfd4570fa1dde086dffd72bc5dec5a728042"'
+          echo "lockfile OK; cache get will materialize locked packages"
+
+      - name: Resource Watchdog (pre-cache)
+        run: df -h /; free -h
+
+      - name: Mathlib Cache Get (独立step)
+        working-directory: lean_proofs
+        run: |
+          export MATHLIB_CACHE_GET_URL="https://cache.mathlib.org/mathlib4"
+          lake exe cache get
+          test "$(git -C .lake/packages/mathlib rev-parse HEAD)" = "4ecbbfd4570fa1dde086dffd72bc5dec5a728042"
+          cmp lean-toolchain .lake/packages/mathlib/lean-toolchain
+          echo "locked dependency materialization OK"
+
+      - name: Resource Watchdog (post-cache)
+        run: df -h /; free -h
+
+      - name: Lake Build (独立step)
+        working-directory: lean_proofs
+        env:
+          LEAN_NUM_THREADS: "1"
+        run: |
+          free -h
+          lake build 2>&1 | tee build.log
+          exit ${PIPESTATUS[0]}
+
+      - name: Lean4checker Fresh Replay
+        working-directory: lean_proofs
+        run: |
+          if [ -x "$LEAN_TOOLCHAIN_DIR/bin/lean4checker" ]; then
+            lake env "$LEAN_TOOLCHAIN_DIR/bin/lean4checker" --fresh Proofs
+          else
+            echo "LEAN4CHECKER=NOT_BUNDLED_IN_V4.36.0-RC2"
+            find "$LEAN_TOOLCHAIN_DIR" -maxdepth 2 -iname '*checker*' -print
+          fi
+
+      - name: Axiom Audit (24定理＋17 examples；零sorryAx闸)
+        working-directory: lean_proofs
+        run: |
+          set -o pipefail
+          lake env lean Audit.lean 2>&1 | tee axiom-audit.log
+          python3 audit_axioms.py Audit.lean axiom-audit.log
+
+      - name: Resource Watchdog (post-build)
+        if: always()
+        run: df -h /; free -h
+
+      - name: Upload Manifest + Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-manifest-public-quick
+          path: |
+            lean_proofs/lake-manifest.json
+            lean_proofs/lean-toolchain
+            lean_proofs/build.log
+            lean_proofs/axiom-audit.log
+          retention-days: 30
+
+      - name: Sorry Audit (文本独立闸)
+        if: always()
+        working-directory: lean_proofs
+        run: |
+          echo "=== sorry 命令审计（注释不计入） ==="
+          if grep -nE '^[[:space:]]*(·[[:space:]]*)?sorry\b' Proofs.lean; then
+            echo "发现sorry命令，实验轨拒绝通过"; exit 1
+          else
+            echo "SORRY_COMMANDS=0"
+          fi
