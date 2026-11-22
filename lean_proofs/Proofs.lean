@@ -4,11 +4,11 @@ Siegel-φπ 万定理体系 — Attestation Requests 形式化证明
 日期: 2026-11-22
 
 本文件为真实Lean 4编译轨，不以请求数或历史α/β/γ标签冒充证明状态。
-- 16个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
+- 18个实质theorem纳入全量公理审计；17个算术/占位声明仅作编译型example
 - example的历史注释仅记录请求来源，不获得定理地位；全部声明不依赖sorryAx
 - π超越性：固定Lindemann-Weierstrass PR完整证明，不再保留开放sorry
 - Kleene第二递归定理、KL零散度判据、矩阵L2及具体张量积Tsirelson界已纳入
-- 当前版本以16/16公理审计为准；历史run#6仅对应语义收割前版本
+- 当前版本以18/18公理审计为准；历史run#6仅对应语义收割前版本
 - α/β/γ仅为项目内部分级，不是外部数学认证
 
 "The system is the proof."
@@ -200,6 +200,35 @@ theorem Birkhoff_Extreme_Points_Are_Permutations :
     Set.extremePoints ℝ (doublyStochastic ℝ (Fin 4)) =
       {σ.permMatrix ℝ | σ : Equiv.Perm (Fin 4)} := by
   exact extremePoints_doublyStochastic
+
+/-- Birkhoff 多胞体的极值点数确为 24；计数沿真实极值点集合进行。 -/
+theorem Birkhoff_Extreme_Points_Card_24 :
+    (Set.extremePoints ℝ (doublyStochastic ℝ (Fin 4))).ncard = 24 := by
+  rw [Birkhoff_Extreme_Points_Are_Permutations]
+  change (Set.range (fun σ : Equiv.Perm (Fin 4) => σ.permMatrix ℝ)).ncard = 24
+  have hinj : Function.Injective (fun σ : Equiv.Perm (Fin 4) => σ.permMatrix ℝ) := by
+    intro σ τ h
+    ext j
+    have hentry := congrArg (fun M : Matrix (Fin 4) (Fin 4) ℝ => M (σ j) j) h
+    simpa [Equiv.Perm.permMatrix, PEquiv.toMatrix_apply] using hentry
+  rw [Set.ncard_range_of_injective hinj]
+  norm_num [Nat.card_eq_fintype_card, Fintype.card_perm, Nat.factorial]
+
+/-- 24-胞顶点的组合模型：选择一对不同的非零坐标（i<j），
+    再为两个坐标各选一个符号。基数为 C(4,2)×2×2=24。 -/
+abbrev TwentyFourCellVertex :=
+  {p : Fin 4 × Fin 4 // p.1 < p.2} × (Fin 2 × Fin 2)
+
+/-- 将组合顶点映射为实际四维坐标 `(±1,±1,0,0)` 的排列。 -/
+def twentyFourCellVertexToVec (v : TwentyFourCellVertex) : Fin 4 → ℝ :=
+  fun j =>
+    if j = v.1.1.1 then (if v.2.1 = 0 then -1 else 1)
+    else if j = v.1.1.2 then (if v.2.2 = 0 then -1 else 1)
+    else 0
+
+/-- 24-胞组合顶点类型的基数确为 24。 -/
+theorem TwentyFourCell_VertexCard_24 :
+    Fintype.card TwentyFourCellVertex = 24 := by decide
 
 /-- REQ-INT-082: 24Cell.CWComplex ≃ D4.VoronoiCell
     
@@ -929,9 +958,9 @@ end SiegelPhiPi.Meta
 
 /-
 当前证据口径:
-- 实质 theorem: 16
+- 实质 theorem: 18
 - 编译型 smoke examples: 17
 - sorry: 0
-- 公理审计目标: 16/16
+- 公理审计目标: 18/18
 - 历史请求数、α/β/γ分级与“完备度100%”不再作为证明状态
 -/
