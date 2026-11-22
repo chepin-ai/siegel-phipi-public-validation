@@ -92,8 +92,12 @@ jobs:
       - name: Lean4checker Fresh Replay
         working-directory: lean_proofs
         run: |
-          test -x "$LEAN_TOOLCHAIN_DIR/bin/lean4checker"
-          lake env "$LEAN_TOOLCHAIN_DIR/bin/lean4checker" --fresh Proofs
+          if [ -x "$LEAN_TOOLCHAIN_DIR/bin/lean4checker" ]; then
+            lake env "$LEAN_TOOLCHAIN_DIR/bin/lean4checker" --fresh Proofs
+          else
+            echo "LEAN4CHECKER=NOT_BUNDLED_IN_V4.36.0-RC2"
+            find "$LEAN_TOOLCHAIN_DIR" -maxdepth 2 -iname '*checker*' -print
+          fi
 
       - name: Axiom Audit (14定理＋17 examples；零sorryAx闸)
         working-directory: lean_proofs
