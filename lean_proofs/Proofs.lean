@@ -576,33 +576,29 @@ def tensor_CHSH_Tuple
       (A ⊗ₖ 1) * (A ⊗ₖ 1) = (A * A) ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A A 1 1).symm
       _ = 1 := by
-        rw [hA, Matrix.one_mul]
-        ext ⟨i, j⟩ ⟨k, l⟩
-        simp [Matrix.one_apply]
+        simpa only [hA, Matrix.one_mul] using
+          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   A₁_inv := by
     calc
       (A' ⊗ₖ 1) * (A' ⊗ₖ 1) = (A' * A') ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A' A' 1 1).symm
       _ = 1 := by
-        rw [hA', Matrix.one_mul]
-        ext ⟨i, j⟩ ⟨k, l⟩
-        simp [Matrix.one_apply]
+        simpa only [hA', Matrix.one_mul] using
+          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   B₀_inv := by
     calc
       (1 ⊗ₖ B) * (1 ⊗ₖ B) = (1 * 1) ⊗ₖ (B * B) :=
         (Matrix.mul_kronecker_mul 1 1 B B).symm
       _ = 1 := by
-        rw [hB, Matrix.one_mul]
-        ext ⟨i, j⟩ ⟨k, l⟩
-        simp [Matrix.one_apply]
+        simpa only [hB, Matrix.one_mul] using
+          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   B₁_inv := by
     calc
       (1 ⊗ₖ B') * (1 ⊗ₖ B') = (1 * 1) ⊗ₖ (B' * B') :=
         (Matrix.mul_kronecker_mul 1 1 B' B').symm
       _ = 1 := by
-        rw [hB', Matrix.one_mul]
-        ext ⟨i, j⟩ ⟨k, l⟩
-        simp [Matrix.one_apply]
+        simpa only [hB', Matrix.one_mul] using
+          (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   A₀_sa := by
     change (A ⊗ₖ 1)ᴴ = A ⊗ₖ 1
     rw [Matrix.conjTranspose_kronecker, hA_sa, Matrix.conjTranspose_one (n := Fin 2) (α := ℂ)]
