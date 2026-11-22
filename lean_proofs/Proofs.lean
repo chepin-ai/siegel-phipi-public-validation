@@ -575,6 +575,7 @@ def tensor_CHSH_Tuple
       ((1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ B)
       ((1 : Matrix (Fin 2) (Fin 2) ℂ) ⊗ₖ B') where
   A₀_inv := by
+    rw [pow_two]
     calc
       (A ⊗ₖ 1) * (A ⊗ₖ 1) = (A * A) ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A A 1 1).symm
@@ -582,6 +583,7 @@ def tensor_CHSH_Tuple
         rw [hA, one_mul_one_matrix]
       _ = 1 := Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ)
   A₁_inv := by
+    rw [pow_two]
     calc
       (A' ⊗ₖ 1) * (A' ⊗ₖ 1) = (A' * A') ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A' A' 1 1).symm
@@ -589,6 +591,7 @@ def tensor_CHSH_Tuple
         rw [hA', one_mul_one_matrix]
       _ = 1 := Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ)
   B₀_inv := by
+    rw [pow_two]
     calc
       (1 ⊗ₖ B) * (1 ⊗ₖ B) = (1 * 1) ⊗ₖ (B * B) :=
         (Matrix.mul_kronecker_mul 1 1 B B).symm
@@ -596,6 +599,7 @@ def tensor_CHSH_Tuple
         rw [hB, one_mul_one_matrix]
       _ = 1 := Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ)
   B₁_inv := by
+    rw [pow_two]
     calc
       (1 ⊗ₖ B') * (1 ⊗ₖ B') = (1 * 1) ⊗ₖ (B' * B') :=
         (Matrix.mul_kronecker_mul 1 1 B' B').symm
