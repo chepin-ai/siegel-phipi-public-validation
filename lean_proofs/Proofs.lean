@@ -576,28 +576,28 @@ def tensor_CHSH_Tuple
       (A ⊗ₖ 1) * (A ⊗ₖ 1) = (A * A) ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A A 1 1).symm
       _ = 1 := by
-        simpa only [hA, Matrix.one_mul] using
+        simpa only [hA, one_mul] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   A₁_inv := by
     calc
       (A' ⊗ₖ 1) * (A' ⊗ₖ 1) = (A' * A') ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A' A' 1 1).symm
       _ = 1 := by
-        simpa only [hA', Matrix.one_mul] using
+        simpa only [hA', one_mul] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   B₀_inv := by
     calc
       (1 ⊗ₖ B) * (1 ⊗ₖ B) = (1 * 1) ⊗ₖ (B * B) :=
         (Matrix.mul_kronecker_mul 1 1 B B).symm
       _ = 1 := by
-        simpa only [hB, Matrix.one_mul] using
+        simpa only [hB, one_mul] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   B₁_inv := by
     calc
       (1 ⊗ₖ B') * (1 ⊗ₖ B') = (1 * 1) ⊗ₖ (B' * B') :=
         (Matrix.mul_kronecker_mul 1 1 B' B').symm
       _ = 1 := by
-        simpa only [hB', Matrix.one_mul] using
+        simpa only [hB', one_mul] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   A₀_sa := by
     change (A ⊗ₖ 1)ᴴ = A ⊗ₖ 1
