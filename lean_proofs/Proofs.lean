@@ -213,7 +213,7 @@ theorem Birkhoff_Extreme_Points_Card_24 :
     have hentry := congrArg (fun M : Matrix (Fin 4) (Fin 4) ℝ => M j (σ j)) h
     have hfin : σ j = τ j := by
       simpa [Equiv.Perm.permMatrix, PEquiv.toMatrix_apply, eq_comm] using hentry
-    exact_mod_cast hfin
+    exact congrArg (fun x : Fin 4 => x.val) hfin
   rw [Set.ncard_range_of_injective hinj]
   norm_num [Nat.card_eq_fintype_card, Fintype.card_perm, Nat.factorial]
 
