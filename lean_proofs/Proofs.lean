@@ -203,7 +203,8 @@ theorem Birkhoff_Extreme_Points_Are_Permutations :
 
 /-- Birkhoff 多胞体的极值点数确为 24；计数沿真实极值点集合进行。 -/
 theorem Birkhoff_Extreme_Points_Card_24 :
-    (Set.extremePoints ℝ (doublyStochastic ℝ (Fin 4))).ncard = 24 := by
+    (Set.extremePoints ℝ
+      (doublyStochastic ℝ (Fin 4) : Set (Matrix (Fin 4) (Fin 4) ℝ))).ncard = 24 := by
   rw [Birkhoff_Extreme_Points_Are_Permutations]
   change (Set.range (fun σ : Equiv.Perm (Fin 4) => σ.permMatrix ℝ)).ncard = 24
   have hinj : Function.Injective (fun σ : Equiv.Perm (Fin 4) => σ.permMatrix ℝ) := by
