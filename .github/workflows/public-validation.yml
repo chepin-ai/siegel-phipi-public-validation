@@ -27,7 +27,6 @@ jobs:
             [ $i -eq 4 ] && exit 1
           done
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
-          echo "LEAN_TOOLCHAIN_DIR=$HOME/.elan/toolchains/$DIR" >> $GITHUB_ENV
 
       # 全链路走GitHub releases；toolchain与mathlib均由仓内锁文件固定
       # 不再读取mathlib master，避免上游漂移改变验证对象
@@ -41,6 +40,7 @@ jobs:
           VER=${TC##*:}                       # v4.35.0 / v4.36.0-rc2
           DIR=$(echo "$TC" | sed 's|/|--|; s|:|---|')  # elan目录命名 sanitize
           echo "version=$VER dir=$DIR"
+          echo "LEAN_TOOLCHAIN_DIR=$HOME/.elan/toolchains/$DIR" >> $GITHUB_ENV
           # 2. GitHub releases直连下载（releases.lean-lang.org的302同源目标）
           for i in 1 2 3 4; do
             if curl -sSfL --max-time 300 \
