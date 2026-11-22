@@ -558,6 +558,9 @@ theorem Tsirelson_Matrix_L2_Norm_Bound
       _ = 2 * Real.sqrt 2 := by rw [Real.sq_sqrt (by norm_num)]
   rwa [heq] at h
 
+private lemma one_mul_one_matrix :
+    (1 : Matrix (Fin 2) (Fin 2) ℂ) * 1 = 1 := one_mul _
+
 /-- 由两组 2×2 自伴对合矩阵构造真实的张量积 CHSH 四元组：
     `A⊗I, A'⊗I, I⊗B, I⊗B'`。全部交换关系来自 Kronecker 乘法律。 -/
 def tensor_CHSH_Tuple
@@ -576,28 +579,28 @@ def tensor_CHSH_Tuple
       (A ⊗ₖ 1) * (A ⊗ₖ 1) = (A * A) ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A A 1 1).symm
       _ = 1 := by
-        simpa only [hA, one_mul] using
+        simpa only [hA, one_mul_one_matrix] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   A₁_inv := by
     calc
       (A' ⊗ₖ 1) * (A' ⊗ₖ 1) = (A' * A') ⊗ₖ (1 * 1) :=
         (Matrix.mul_kronecker_mul A' A' 1 1).symm
       _ = 1 := by
-        simpa only [hA', one_mul] using
+        simpa only [hA', one_mul_one_matrix] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   B₀_inv := by
     calc
       (1 ⊗ₖ B) * (1 ⊗ₖ B) = (1 * 1) ⊗ₖ (B * B) :=
         (Matrix.mul_kronecker_mul 1 1 B B).symm
       _ = 1 := by
-        simpa only [hB, one_mul] using
+        simpa only [hB, one_mul_one_matrix] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   B₁_inv := by
     calc
       (1 ⊗ₖ B') * (1 ⊗ₖ B') = (1 * 1) ⊗ₖ (B' * B') :=
         (Matrix.mul_kronecker_mul 1 1 B' B').symm
       _ = 1 := by
-        simpa only [hB', one_mul] using
+        simpa only [hB', one_mul_one_matrix] using
           (Matrix.one_kronecker_one (m := Fin 2) (n := Fin 2) (α := ℂ))
   A₀_sa := by
     change (A ⊗ₖ 1)ᴴ = A ⊗ₖ 1
